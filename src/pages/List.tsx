@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button, Card, Popconfirm, Table, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { Item } from '../types/item'
 import { defaultItems } from '../data/defaultItems'
+import { useAuthStore } from '../stores/authStore'
 
 const PER_PAGE = 5
 
 function List() {
-  const navigate = useNavigate()
+  const logout = useAuthStore((s) => s.logout)
 
   const [items, setItems] = useState<Item[]>(() => {
     try {
@@ -26,8 +27,7 @@ function List() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token') // akan diganti Zustand di Tahap 3
-    navigate('/login')
+    logout() // ProtectedRoute otomatis mengarahkan ke /login
   }
 
   const handleDelete = (id: number) => {
