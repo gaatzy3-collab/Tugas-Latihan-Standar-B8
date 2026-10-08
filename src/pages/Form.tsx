@@ -4,11 +4,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Card, Input, Spin, message } from 'antd'
 import { bookNoteSchema, type BookNoteFormValues } from '../schemas/bookNote'
-import {
-  useBookNote,
-  useCreateBookNote,
-  useUpdateBookNote,
-} from '../hooks/useBookNotes'
+import { useBookNote, useCreateBookNote, useUpdateBookNote } from '../hooks/useBookNotes'
 
 function Form() {
   const navigate = useNavigate()
@@ -84,7 +80,9 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {fieldState.error.message}
+                    </p>
                   )}
                 </div>
               )}
@@ -103,7 +101,9 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {fieldState.error.message}
+                    </p>
                   )}
                 </div>
               )}

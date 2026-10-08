@@ -75,7 +75,12 @@ function Login() {
             )}
           />
 
-          <Button type="primary" htmlType="submit" block loading={loginMutation.isPending}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loginMutation.isPending}
+          >
             Login
           </Button>
         </form>
