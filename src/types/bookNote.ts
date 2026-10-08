@@ -1,10 +1,10 @@
-export interface Item {
+export interface BookNote {
   id: number
-  name: string
-  description: string
+  title: string
+  content: string
 }
 
-export type ItemPayload = Omit<Item, 'id'>
+export type BookNotePayload = Omit<BookNote, 'id'>
 
 export interface LoginPayload {
   email: string
