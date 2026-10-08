@@ -13,10 +13,6 @@ import App from './App';
 // Import file CSS global agar styling-nya berlaku untuk seluruh aplikasi
 import './index.css';
 
-// Menghapus SEMUA data yang tersimpan di localStorage browser.
-// (Catatan: Baris ini biasanya hanya dipakai saat development/debugging agar data lama tidak mengganggu)
-localStorage.clear();
-
 // Mencari elemen HTML dengan id="root" di file index.html, 
 // lalu membuat "akar" (root) React di dalamnya untuk mulai merender aplikasi.
 // (Tanda '!' di belakangnya adalah TypeScript assertion untuk memastikan elemen root pasti ada)
