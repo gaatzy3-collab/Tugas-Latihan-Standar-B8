@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Alert, Button, Card, Input } from 'antd'
 import { useAuthStore } from '../stores/authStore'
+import { login as loginRequest } from '../services/authService'
 
 function Login() {
   const login = useAuthStore((s) => s.login)
@@ -8,6 +10,15 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+
+  const loginMutation = useMutation({
+    mutationFn: loginRequest,
+    onSuccess: (res) => {
+      // PublicOnlyRoute otomatis mengarahkan ke "/" setelah token terisi
+      if (res.data) login(res.data.token, res.data.user)
+    },
+    onError: (err: Error) => setError(err.message),
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,20 +28,17 @@ function Login() {
       return
     }
 
-    // Simulasi login. Nanti diganti Axios + TanStack Query (Tahap 4).
-    // PublicOnlyRoute otomatis mengarahkan ke "/" setelah token terisi,
-    // jadi tidak perlu navigate() lagi.
-    login('token-palsu-12345', email)
+    loginMutation.mutate({ email, password })
   }
 
   return (
     <div className="mx-auto mt-16 max-w-sm px-4">
       <Card title={<span className="text-lg font-semibold">🔐 Login</span>}>
-       {error && (
-        <div className="mb-4">
-          <Alert type="error" message={error} showIcon />
-        </div>
-          )}
+        {error && (
+          <div className="mb-4">
+            <Alert type="error" message={error} showIcon />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
@@ -58,7 +66,12 @@ function Login() {
             />
           </div>
 
-          <Button type="primary" htmlType="submit" block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loginMutation.isPending}
+          >
             Login
           </Button>
         </form>

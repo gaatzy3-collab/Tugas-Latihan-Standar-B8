@@ -1,38 +1,32 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Card, Popconfirm, Table, message } from 'antd'
+import { Alert, Button, Card, Popconfirm, Table, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { Item } from '../types/item'
-import { defaultItems } from '../data/defaultItems'
 import { useAuthStore } from '../stores/authStore'
+import { useDeleteItem, useItems } from '../hooks/useItems'
 
-const PER_PAGE = 5
+const LIMIT = 5
 
 function List() {
   const logout = useAuthStore((s) => s.logout)
-
-  const [items, setItems] = useState<Item[]>(() => {
-    try {
-      const saved = localStorage.getItem('appItems')
-      return saved ? (JSON.parse(saved) as Item[]) : defaultItems
-    } catch {
-      return defaultItems
-    }
-  })
   const [page, setPage] = useState(1)
 
-  const saveItems = (newItems: Item[]) => {
-    setItems(newItems)
-    localStorage.setItem('appItems', JSON.stringify(newItems))
-  }
+  const { data, isLoading, isError } = useItems(page, LIMIT)
+  const deleteMutation = useDeleteItem()
 
-  const handleLogout = () => {
-    logout() // ProtectedRoute otomatis mengarahkan ke /login
-  }
+  const items = data?.data ?? []
+  const meta = data?.meta
 
   const handleDelete = (id: number) => {
-    saveItems(items.filter((item) => item.id !== id))
-    message.success('Item berhasil dihapus')
+    deleteMutation.mutate(id, {
+      onSuccess: (res) => {
+        message.success(res.message)
+        // kalau yang dihapus item terakhir di halaman ini, mundur satu halaman
+        if (items.length === 1 && page > 1) setPage(page - 1)
+      },
+      onError: () => message.error('Gagal menghapus item'),
+    })
   }
 
   const columns: ColumnsType<Item> = [
@@ -40,7 +34,7 @@ function List() {
       title: 'No',
       key: 'no',
       width: 70,
-      render: (_, __, index) => (page - 1) * PER_PAGE + index + 1,
+      render: (_, __, index) => (page - 1) * LIMIT + index + 1,
     },
     { title: 'Nama', dataIndex: 'name', key: 'name' },
     { title: 'Deskripsi', dataIndex: 'description', key: 'description' },
@@ -58,7 +52,9 @@ function List() {
             cancelText="Batal"
             onConfirm={() => handleDelete(item.id)}
           >
-            <Button size="small" danger>Hapus</Button>
+            <Button size="small" danger loading={deleteMutation.isPending}>
+              Hapus
+            </Button>
           </Popconfirm>
         </div>
       ),
@@ -74,18 +70,25 @@ function List() {
             <Link to="/add">
               <Button type="primary">+ Tambah</Button>
             </Link>
-            <Button danger onClick={handleLogout}>Logout</Button>
+            <Button danger onClick={logout}>Logout</Button>
           </div>
         }
       >
+        {isError && (
+          <div className="mb-4">
+            <Alert type="error" message="Gagal memuat data" showIcon />
+          </div>
+        )}
         <Table<Item>
           rowKey="id"
           columns={columns}
           dataSource={items}
+          loading={isLoading}
           scroll={{ x: 'max-content' }}
           pagination={{
             current: page,
-            pageSize: PER_PAGE,
+            pageSize: LIMIT,
+            total: meta?.totalData ?? 0,
             onChange: setPage,
             showSizeChanger: false,
           }}
