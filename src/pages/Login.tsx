@@ -6,6 +6,7 @@ import { Alert, Button, Card, Input } from 'antd'
 import { useAuthStore } from '../stores/authStore'
 import { login as loginRequest } from '../services/authService'
 import { loginSchema, type LoginFormValues } from '../schemas/auth'
+import { getErrorMessage } from '../lib/errorMessage'
 
 function Login() {
   const login = useAuthStore((s) => s.login)
@@ -21,7 +22,7 @@ function Login() {
     onSuccess: (res) => {
       if (res.data) login(res.data.token, res.data.user)
     },
-    onError: (err: Error) => setApiError(err.message),
+    onError: (err) => setApiError(getErrorMessage(err)),
   })
 
   const onSubmit = (values: LoginFormValues) => {
