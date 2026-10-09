@@ -1,76 +1,56 @@
-# React + TypeScript + Vite
+# Catatan Buku (Tugas Latihan Standar B8)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Antarmuka frontend untuk API latihan "Catatan Buku", dikerjakan sebagai tugas latihan standar track Frontend Web PT. LSKK. Fitur: login, daftar catatan dengan pagination, serta form tambah dan edit.
 
-Currently, two official plugins are available:
+> Backend belum tersedia, jadi data berasal dari service mock yang menyimpan ke `localStorage` dan mengembalikan bentuk `IResponseEntity<T>`. Saat backend siap, cukup ganti isi service ke Axios tanpa mengubah komponen.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- TypeScript, React (functional components), Vite
+- Tailwind CSS (mobile-first) dan Ant Design
+- MUI X Data Grid untuk tabel daftar
+- Axios (instance + interceptor token) dan TanStack Query
+- Zustand (state auth, persist)
+- React Router `createHashRouter` dengan `ProtectedRoute`
+- React Hook Form + Zod
+- ESLint (default Vite) dan Prettier
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Menjalankan project
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+| Perintah               | Fungsi                         |
+| ---------------------- | ------------------------------ |
+| `npm run dev`          | Menjalankan server development |
+| `npm run build`        | Type-check dan build produksi  |
+| `npm run lint`         | Menjalankan ESLint             |
+| `npm run format`       | Memformat kode dengan Prettier |
+| `npm run format:check` | Mengecek format tanpa mengubah |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Login memakai simulasi: email dan password bebas, selama format email valid.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Struktur folder
+
 ```
+src/
+├── components/   # ProtectedRoute, PublicOnlyRoute
+├── data/         # data awal (dummy)
+├── hooks/        # hook TanStack Query (useBookNotes, dst.)
+├── lib/          # axios instance, helper pesan error
+├── pages/        # Login, List, Form, dan lazy.tsx (lazy loading)
+├── schemas/      # skema Zod
+├── services/     # service mock (auth, catatan buku)
+├── stores/       # Zustand (authStore)
+├── types/        # IResponseEntity, ImetaPagination, BookNote
+├── router.tsx    # createHashRouter
+└── main.tsx
+```
+
+## Catatan
+
+- Seluruh response API memakai `IResponseEntity<T>`. Pesan error untuk pengguna diambil dari field `message`, dan kode 500 ditampilkan sebagai pesan generik.
+- Halaman dimuat dengan lazy loading (`React.lazy` dan `Suspense`).
+- Alamat aplikasi memakai hash, misalnya `http://localhost:5173/#/login`.
