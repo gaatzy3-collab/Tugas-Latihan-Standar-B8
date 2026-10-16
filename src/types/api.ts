@@ -9,7 +9,7 @@ export interface ImetaPagination {
 export interface IResponseEntity<T> {
   code: number // HTTP status
   status: boolean // true = sukses
-  message: string // dari ValidationPipe bisa berupa array of string
+  message: string // jika dari ValidationPipe berupa array, digabung menjadi satu string
   data?: T
   meta?: ImetaPagination
 }
