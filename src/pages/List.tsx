@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Alert, Button, Card, Popconfirm, message } from 'antd'
+import { Alert, Button, Card, message } from 'antd'
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import type { BookNote } from '../types/bookNote'
 import { useAuthStore } from '../stores/authStore'
 import { useBookNotes, useDeleteBookNote } from '../hooks/useBookNotes'
 import { getErrorMessage } from '../lib/errorMessage'
+import BookNoteActions from '../components/BookNoteActions'
 
 const LIMIT = 5
 
@@ -18,57 +19,48 @@ function List() {
   const [page, setPage] = useState(1)
 
   const { data, isLoading, isError, error } = useBookNotes(page, LIMIT)
-  const deleteMutation = useDeleteBookNote()
+  const { mutate: deleteNote, isPending: isDeleting } = useDeleteBookNote()
 
-  const notes = data?.data ?? []
+  const notes = useMemo(() => data?.data ?? [], [data])
   const meta = data?.meta
+  const notesCount = notes.length
 
-  const rows: BookNoteRow[] = notes.map((note, index) => ({
-    ...note,
-    no: (page - 1) * LIMIT + index + 1,
-  }))
+  const rows = useMemo<BookNoteRow[]>(
+    () => notes.map((note, index) => ({ ...note, no: (page - 1) * LIMIT + index + 1 })),
+    [notes, page],
+  )
 
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id, {
-      onSuccess: (res) => {
-        message.success(res.message)
-        // kalau yang dihapus catatan terakhir di halaman ini, mundur satu halaman
-        if (notes.length === 1 && page > 1) setPage(page - 1)
-      },
-      onError: (err) => message.error(getErrorMessage(err)),
-    })
-  }
-
-  const columns: GridColDef<BookNoteRow>[] = [
-    { field: 'no', headerName: 'No', width: 70, sortable: false },
-    { field: 'title', headerName: 'Judul Buku', flex: 1, minWidth: 160 },
-    { field: 'content', headerName: 'Catatan', flex: 2, minWidth: 220 },
-    {
-      field: 'aksi',
-      headerName: 'Aksi',
-      width: 170,
-      sortable: false,
-      renderCell: ({ row }) => (
-        <div className="flex h-full items-center gap-2">
-          <Link to={`/edit/${row.id}`}>
-            <Button size="small" type="primary">
-              Edit
-            </Button>
-          </Link>
-          <Popconfirm
-            title="Hapus catatan ini?"
-            okText="Ya"
-            cancelText="Batal"
-            onConfirm={() => handleDelete(row.id)}
-          >
-            <Button size="small" danger loading={deleteMutation.isPending}>
-              Hapus
-            </Button>
-          </Popconfirm>
-        </div>
-      ),
+  const handleDelete = useCallback(
+    (id: number) => {
+      deleteNote(id, {
+        onSuccess: (res) => {
+          message.success(res.message)
+          // kalau yang dihapus catatan terakhir di halaman ini, mundur satu halaman
+          if (notesCount === 1 && page > 1) setPage(page - 1)
+        },
+        onError: (err) => message.error(getErrorMessage(err)),
+      })
     },
-  ]
+    [deleteNote, notesCount, page],
+  )
+
+  const columns = useMemo<GridColDef<BookNoteRow>[]>(
+    () => [
+      { field: 'no', headerName: 'No', width: 70, sortable: false },
+      { field: 'title', headerName: 'Judul Buku', flex: 1, minWidth: 160 },
+      { field: 'content', headerName: 'Catatan', flex: 2, minWidth: 220 },
+      {
+        field: 'aksi',
+        headerName: 'Aksi',
+        width: 170,
+        sortable: false,
+        renderCell: ({ row }) => (
+          <BookNoteActions id={row.id} isDeleting={isDeleting} onDelete={handleDelete} />
+        ),
+      },
+    ],
+    [handleDelete, isDeleting],
+  )
 
   return (
     <div className="mx-auto max-w-4xl p-4">
