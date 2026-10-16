@@ -3,28 +3,32 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Card, Input, Spin, message } from 'antd'
-import { itemSchema, type ItemFormValues } from '../schemas/item'
-import { useCreateItem, useItem, useUpdateItem } from '../hooks/useItems'
+import { bookNoteSchema, type BookNoteFormValues } from '../schemas/bookNote'
+import {
+  useBookNote,
+  useCreateBookNote,
+  useUpdateBookNote,
+} from '../hooks/useBookNotes'
 
 function Form() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const itemId = id ? Number(id) : undefined
-  const isEditMode = itemId !== undefined
+  const noteId = id ? Number(id) : undefined
+  const isEditMode = noteId !== undefined
 
-  const { control, handleSubmit, reset } = useForm<ItemFormValues>({
-    resolver: zodResolver(itemSchema),
-    defaultValues: { name: '', description: '' },
+  const { control, handleSubmit, reset } = useForm<BookNoteFormValues>({
+    resolver: zodResolver(bookNoteSchema),
+    defaultValues: { title: '', content: '' },
   })
 
-  const { data, isLoading, isError } = useItem(itemId)
-  const createMutation = useCreateItem()
-  const updateMutation = useUpdateItem()
+  const { data, isLoading, isError } = useBookNote(noteId)
+  const createMutation = useCreateBookNote()
+  const updateMutation = useUpdateBookNote()
   const isSaving = createMutation.isPending || updateMutation.isPending
 
   useEffect(() => {
     if (data?.data) {
-      reset({ name: data.data.name, description: data.data.description })
+      reset({ title: data.data.title, content: data.data.content })
     }
   }, [data, reset])
 
@@ -33,19 +37,19 @@ function Form() {
     navigate('/')
   }
 
-  const onSubmit = (values: ItemFormValues) => {
+  const onSubmit = (values: BookNoteFormValues) => {
     if (isEditMode) {
       updateMutation.mutate(
-        { id: itemId, payload: values },
+        { id: noteId, payload: values },
         {
           onSuccess: (res) => done(res.message),
-          onError: () => message.error('Gagal mengupdate item'),
+          onError: () => message.error('Gagal mengupdate catatan'),
         },
       )
     } else {
       createMutation.mutate(values, {
         onSuccess: (res) => done(res.message),
-        onError: () => message.error('Gagal menambahkan item'),
+        onError: () => message.error('Gagal menambahkan catatan'),
       })
     }
   }
@@ -55,28 +59,28 @@ function Form() {
       <Card
         title={
           <span className="text-lg font-semibold">
-            {isEditMode ? '✏️ Edit Item' : '➕ Tambah Item'}
+            {isEditMode ? '✏️ Edit Catatan Buku' : '➕ Tambah Catatan Buku'}
           </span>
         }
         extra={<Button onClick={() => navigate('/')}>← Kembali</Button>}
       >
         {isEditMode && isError && (
           <div className="mb-4">
-            <Alert type="error" message="Item tidak ditemukan" showIcon />
+            <Alert type="error" message="Catatan tidak ditemukan" showIcon />
           </div>
         )}
 
         <Spin spinning={isEditMode && isLoading}>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <Controller
-              name="name"
+              name="title"
               control={control}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="mb-1 block text-sm">Nama</label>
+                  <label className="mb-1 block text-sm">Judul Buku</label>
                   <Input
                     {...field}
-                    placeholder="Masukkan nama"
+                    placeholder="Masukkan judul buku"
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
@@ -87,15 +91,15 @@ function Form() {
             />
 
             <Controller
-              name="description"
+              name="content"
               control={control}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="mb-1 block text-sm">Deskripsi</label>
+                  <label className="mb-1 block text-sm">Catatan</label>
                   <Input.TextArea
                     {...field}
                     rows={4}
-                    placeholder="Masukkan deskripsi"
+                    placeholder="Masukkan catatan"
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (

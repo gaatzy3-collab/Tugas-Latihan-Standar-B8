@@ -1,5 +1,5 @@
 import type { IResponseEntity } from '../types/api'
-import type { LoginPayload, LoginResult } from '../types/item'
+import type { LoginPayload, LoginResult } from '../types/bookNote'
 import { ApiError } from './apiError'
 
 const delay = (ms = 400) => new Promise<void>((r) => setTimeout(r, ms))
