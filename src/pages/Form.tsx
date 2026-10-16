@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Card, Input, Spin, message } from 'antd'
 import { bookNoteSchema, type BookNoteFormValues } from '../schemas/bookNote'
 import { useBookNote, useCreateBookNote, useUpdateBookNote } from '../hooks/useBookNotes'
+import { getErrorMessage } from '../lib/errorMessage'
 
 function Form() {
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ function Form() {
     defaultValues: { title: '', content: '' },
   })
 
-  const { data, isLoading, isError } = useBookNote(noteId)
+  const { data, isLoading, isError, error } = useBookNote(noteId)
   const createMutation = useCreateBookNote()
   const updateMutation = useUpdateBookNote()
   const isSaving = createMutation.isPending || updateMutation.isPending
@@ -39,13 +40,13 @@ function Form() {
         { id: noteId, payload: values },
         {
           onSuccess: (res) => done(res.message),
-          onError: () => message.error('Gagal mengupdate catatan'),
+          onError: (err) => message.error(getErrorMessage(err)),
         },
       )
     } else {
       createMutation.mutate(values, {
         onSuccess: (res) => done(res.message),
-        onError: () => message.error('Gagal menambahkan catatan'),
+        onError: (err) => message.error(getErrorMessage(err)),
       })
     }
   }
@@ -62,7 +63,7 @@ function Form() {
       >
         {isEditMode && isError && (
           <div className="mb-4">
-            <Alert type="error" message="Catatan tidak ditemukan" showIcon />
+            <Alert type="error" message={getErrorMessage(error)} showIcon />
           </div>
         )}
 

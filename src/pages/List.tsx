@@ -5,6 +5,7 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import type { BookNote } from '../types/bookNote'
 import { useAuthStore } from '../stores/authStore'
 import { useBookNotes, useDeleteBookNote } from '../hooks/useBookNotes'
+import { getErrorMessage } from '../lib/errorMessage'
 
 const LIMIT = 5
 
@@ -16,7 +17,7 @@ function List() {
   const logout = useAuthStore((s) => s.logout)
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError } = useBookNotes(page, LIMIT)
+  const { data, isLoading, isError, error } = useBookNotes(page, LIMIT)
   const deleteMutation = useDeleteBookNote()
 
   const notes = data?.data ?? []
@@ -34,7 +35,7 @@ function List() {
         // kalau yang dihapus catatan terakhir di halaman ini, mundur satu halaman
         if (notes.length === 1 && page > 1) setPage(page - 1)
       },
-      onError: () => message.error('Gagal menghapus catatan'),
+      onError: (err) => message.error(getErrorMessage(err)),
     })
   }
 
@@ -86,7 +87,7 @@ function List() {
       >
         {isError && (
           <div className="mb-4">
-            <Alert type="error" message="Gagal memuat data" showIcon />
+            <Alert type="error" message={getErrorMessage(error)} showIcon />
           </div>
         )}
         <div className="overflow-x-auto">
