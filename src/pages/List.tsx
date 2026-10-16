@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Alert, Button, Card, Popconfirm, Table, message } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { Alert, Button, Card, Popconfirm, message } from 'antd'
+import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import type { BookNote } from '../types/bookNote'
 import { useAuthStore } from '../stores/authStore'
 import { useBookNotes, useDeleteBookNote } from '../hooks/useBookNotes'
 
 const LIMIT = 5
+
+interface BookNoteRow extends BookNote {
+  no: number
+}
 
 function List() {
   const logout = useAuthStore((s) => s.logout)
@@ -17,6 +21,11 @@ function List() {
 
   const notes = data?.data ?? []
   const meta = data?.meta
+
+  const rows: BookNoteRow[] = notes.map((note, index) => ({
+    ...note,
+    no: (page - 1) * LIMIT + index + 1,
+  }))
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id, {
@@ -29,28 +38,25 @@ function List() {
     })
   }
 
-  const columns: ColumnsType<BookNote> = [
+  const columns: GridColDef<BookNoteRow>[] = [
+    { field: 'no', headerName: 'No', width: 70, sortable: false },
+    { field: 'title', headerName: 'Judul Buku', flex: 1, minWidth: 160 },
+    { field: 'content', headerName: 'Catatan', flex: 2, minWidth: 220 },
     {
-      title: 'No',
-      key: 'no',
-      width: 70,
-      render: (_, __, index) => (page - 1) * LIMIT + index + 1,
-    },
-    { title: 'Judul Buku', dataIndex: 'title', key: 'title' },
-    { title: 'Catatan', dataIndex: 'content', key: 'content' },
-    {
-      title: 'Aksi',
-      key: 'aksi',
-      render: (_, note) => (
-        <div className="flex gap-2">
-          <Link to={`/edit/${note.id}`}>
+      field: 'aksi',
+      headerName: 'Aksi',
+      width: 170,
+      sortable: false,
+      renderCell: ({ row }) => (
+        <div className="flex h-full items-center gap-2">
+          <Link to={`/edit/${row.id}`}>
             <Button size="small" type="primary">Edit</Button>
           </Link>
           <Popconfirm
             title="Hapus catatan ini?"
             okText="Ya"
             cancelText="Batal"
-            onConfirm={() => handleDelete(note.id)}
+            onConfirm={() => handleDelete(row.id)}
           >
             <Button size="small" danger loading={deleteMutation.isPending}>
               Hapus
@@ -79,20 +85,22 @@ function List() {
             <Alert type="error" message="Gagal memuat data" showIcon />
           </div>
         )}
-        <Table<BookNote>
-          rowKey="id"
-          columns={columns}
-          dataSource={notes}
-          loading={isLoading}
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            current: page,
-            pageSize: LIMIT,
-            total: meta?.totalData ?? 0,
-            onChange: setPage,
-            showSizeChanger: false,
-          }}
-        />
+        <div className="overflow-x-auto">
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            loading={isLoading}
+            autoHeight
+            disableRowSelectionOnClick
+            disableColumnMenu
+            paginationMode="server"
+            rowCount={meta?.totalData ?? 0}
+            paginationModel={{ page: page - 1, pageSize: LIMIT }}
+            onPaginationModelChange={(model) => setPage(model.page + 1)}
+            pageSizeOptions={[LIMIT]}
+            sx={{ minWidth: 600 }}
+          />
+        </div>
       </Card>
     </div>
   )
