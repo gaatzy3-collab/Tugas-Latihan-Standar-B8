@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Card, Input, Spin, message } from 'antd'
@@ -10,7 +10,11 @@ import { getErrorMessage } from '../lib/errorMessage'
 function Form() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const noteId = id ? Number(id) : undefined
+  const parsedId = id === undefined ? undefined : Number(id)
+  // /edit/abc menghasilkan NaN, /edit/0 atau /edit/-1 juga tidak valid
+  const hasInvalidId =
+    parsedId !== undefined && (!Number.isInteger(parsedId) || parsedId < 1)
+  const noteId = hasInvalidId ? undefined : parsedId
   const isEditMode = noteId !== undefined
 
   const { control, handleSubmit, reset } = useForm<BookNoteFormValues>({
@@ -28,6 +32,8 @@ function Form() {
       reset({ title: data.data.title, content: data.data.content })
     }
   }, [data, reset])
+
+  if (hasInvalidId) return <Navigate to="/" replace />
 
   const done = (text: string) => {
     message.success(text)
@@ -81,9 +87,7 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {fieldState.error.message}
-                    </p>
+                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
                   )}
                 </div>
               )}
@@ -102,9 +106,7 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {fieldState.error.message}
-                    </p>
+                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
                   )}
                 </div>
               )}
