@@ -19,7 +19,13 @@ function List() {
   const [page, setPage] = useState(1)
 
   const { data, isLoading, isError, error } = useBookNotes(page, LIMIT)
-  const { mutate: deleteNote, isPending: isDeleting } = useDeleteBookNote()
+  const {
+    mutate: deleteNote,
+    isPending: isDeleting,
+    variables: deleteVariables,
+  } = useDeleteBookNote()
+  // id catatan yang sedang dihapus (undefined kalau tidak ada)
+  const deletingId = isDeleting ? deleteVariables : undefined
 
   const notes = useMemo(() => data?.data ?? [], [data])
   const meta = data?.meta
@@ -55,11 +61,15 @@ function List() {
         width: 170,
         sortable: false,
         renderCell: ({ row }) => (
-          <BookNoteActions id={row.id} isDeleting={isDeleting} onDelete={handleDelete} />
+          <BookNoteActions
+            id={row.id}
+            isDeleting={deletingId === row.id}
+            onDelete={handleDelete}
+          />
         ),
       },
     ],
-    [handleDelete, isDeleting],
+    [handleDelete, deletingId],
   )
 
   return (
