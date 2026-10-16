@@ -50,7 +50,9 @@ function List() {
       renderCell: ({ row }) => (
         <div className="flex h-full items-center gap-2">
           <Link to={`/edit/${row.id}`}>
-            <Button size="small" type="primary">Edit</Button>
+            <Button size="small" type="primary">
+              Edit
+            </Button>
           </Link>
           <Popconfirm
             title="Hapus catatan ini?"
@@ -76,7 +78,9 @@ function List() {
             <Link to="/add">
               <Button type="primary">+ Tambah</Button>
             </Link>
-            <Button danger onClick={logout}>Logout</Button>
+            <Button danger onClick={logout}>
+              Logout
+            </Button>
           </div>
         }
       >
