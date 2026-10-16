@@ -1,6 +1,5 @@
 import axios from 'axios'
 import type { IResponseEntity } from '../types/api'
-import { ApiError } from '../services/apiError'
 
 const GENERIC_MESSAGE = 'Terjadi kesalahan pada server. Silakan coba lagi.'
 
@@ -18,20 +17,12 @@ function toText(message: unknown): string {
 }
 
 export function getErrorMessage(error: unknown): string {
-  // error dari service mock
-  if (error instanceof ApiError) {
-    return error.code >= 500 ? GENERIC_MESSAGE : error.message
-  }
-
-  // error dari Axios (backend asli): body selalu IResponseEntity
   if (axios.isAxiosError(error)) {
     if (!error.response) return 'Tidak dapat terhubung ke server.'
     const body: unknown = error.response.data
     if (isResponseEntity(body)) {
       return body.code >= 500 ? GENERIC_MESSAGE : toText(body.message)
     }
-    return GENERIC_MESSAGE
   }
-
   return GENERIC_MESSAGE
 }
