@@ -87,7 +87,9 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {fieldState.error.message}
+                    </p>
                   )}
                 </div>
               )}
@@ -106,7 +108,9 @@ function Form() {
                     status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-500">{fieldState.error.message}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {fieldState.error.message}
+                    </p>
                   )}
                 </div>
               )}
